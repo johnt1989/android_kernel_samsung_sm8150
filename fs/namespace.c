@@ -183,9 +183,11 @@ enum {
 	UMOUNT_STATUS_MAX
 };
 
+#ifdef CONFIG_PROC_STLOG
 static const char *umount_exit_str[UMOUNT_STATUS_MAX] = {
 	"ADDED_TASK", "REMAIN_NS", "REMAIN_CNT", "DELAY_TASK"
 };
+#endif
 
 static const char *exception_process[] = {
 	"main", "ch_zygote", "usap32", "usap64", NULL,
@@ -210,6 +212,7 @@ static inline int is_exception(char *comm)
 
 static inline void sys_umount_trace_print(struct mount *mnt, int flags)
 {
+#ifdef CONFIG_PROC_STLOG
 #ifdef CONFIG_RKP_NS_PROT
 	struct super_block *sb = mnt->mnt->mnt_sb;
 	int mnt_flags = mnt->mnt->mnt_flags;
@@ -229,6 +232,7 @@ static inline void sys_umount_trace_print(struct mount *mnt, int flags)
 			sb->s_id, MAJOR(bd_dev), MINOR(bd_dev), mnt_flags,
 			flags, umount_exit_str[sys_umount_trace_status]);
 	}
+#endif
 }
 
 #ifdef CONFIG_RKP_NS_PROT
