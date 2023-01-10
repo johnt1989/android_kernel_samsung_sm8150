@@ -1,0 +1,105 @@
+name: kernel_builder
+
+on:
+#  release:
+#    types: [published]
+#  push:
+#    branches:
+#      - master
+#    paths:
+#      - '.config'
+#  schedule:
+#    - cron: 0 8 * * 5
+#  tested on android 8.1
+  workflow_dispatch:
+
+env:
+
+  KS_LINK: https://github.com/johnt1989/android_kernel_samsung_sm8150 -b android-12
+  Device: d2q
+  
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+       - name: Checkout
+         uses: actions/checkout@master
+
+       - name: Cleanup
+         uses: rokibhasansagar/slimhub_actions@main
+
+       - name: Dependencies
+         run: |
+             sudo apt update && sudo apt -y upgrade
+             sudo apt -y install git wget curl tar build-essential gperf bc ccache lzop pngcrush lzma axel schedtool make cmake autoconf autopoint flex lzip bison unzip rsync zip x11proto-core-dev xsltproc squashfs-tools imagemagick python python-all-dev python2.7 automake bzip2 device-tree-compiler pandoc xz-utils optipng maven dpkg-dev liblz4-tool libxml2 libxml2-utils gcc gcc-multilib g++ g++-multilib libc6-dev lib32z-dev lib32z1-dev zlib1g-dev libncurses5 libncurses5-dev lib32ncurses5-dev libreadline-dev lib32readline-dev libx11-dev libgl1-mesa-dev libbz2-dev libstdc++6 liblzma-dev libssl-dev libsdl1.2-dev libwxgtk3.0-gtk3-dev libswitch-perl libxml-sax-base-perl libxml-simple-perl
+             sudo apt update && sudo apt -y upgrade
+
+       - name: Sync recovery source and device tree
+         run: |
+             cd ~
+             mkdir workspace
+             cd workspace
+             git clone $KS_LINK --depth=1 kernel
+             cd kernel
+         
+       - name: Build
+         run: |
+              cd ~/workspace/kernel
+              mkdir out
+              export ARCH=arm64
+              export PLATFORM_VERSION=12
+              export ANDROID_MAJOR_VERSION=s
+              export BUILD_CROSS_COMPILE="$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-"
+              export KERNEL_LLVM_BIN="$(pwd)/toolchain/llvm-arm-toolchain-ship-10.0/bin/clang"
+              export CLANG_TRIPLE="aarch64-linux-gnu-"
+              export KERNEL_MAKE_ENV="LOCALVERSION=-Doc714"
+              export DTS_DIR="$(pwd)/out/arch/$ARCH/boot/dts"
+              export PATH="~/workspace/kernel/toolchain/llvm-arm-toolchain-ship/10.0/bin:~/workspace/kernel/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin:${PATH}"
+              make -j$(nproc) -C $(pwd) O=$(pwd)/out \
+                                    $KERNEL_MAKE_ENV \
+                                    ARCH=arm64 \
+                                    CROSS_COMPILE=$BUILD_CROSS_COMPILE \
+                                    REAL_CC=$KERNEL_LLVM_BIN \
+                                    CLANG_TRIPLE=$CLANG_TRIPLE \
+                                    CFP_CC=$KERNEL_LLVM_BIN doc714_d2q_defconfig
+              make -j$(nproc) -C $(pwd) O=$(pwd)/out \
+                                    $KERNEL_MAKE_ENV \
+                                    ARCH=arm64 \
+                                    CROSS_COMPILE=$BUILD_CROSS_COMPILE \
+                                    REAL_CC=$KERNEL_LLVM_BIN \
+                                    CLANG_TRIPLE=$CLANG_TRIPLE \
+                                    CFP_CC=$KERNEL_LLVM_BIN
+                                    DTBO_FILES=$(find ${DTS_DIR}/samsung -name sm8150-sec-d2q-*-r*.dtbo)
+                                    cat ${DTS_DIR}/qcom/*.dtb > $(pwd)/out/dtb.img
+                                    $(pwd)/tools/mkdtimg create $(pwd)/out/dtbo.img --page_size=4096 ${DTBO_FILES}
+              ls
+              git clone https://github.com/osm0sis/AnyKernel3 /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/out/Anykernel3
+              cp /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/out/arch/arm64/boot/Image.gz-dtb /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/out/Anykernel3/zImage
+              cd /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/out/Anykernel3
+              git reset --hard
+              sed -i "s/ExampleKernel by osm0sis/d2q kernel by Doc714/g" anykernel.sh
+              sed -i "s/=maguro/=d2q/g" anykernel.sh
+              sed -i "s/=toroplus/=/g" anykernel.sh
+              sed -i "s/=toro/=/g" anykernel.sh
+              sed -i "s/=tuna/=/g" anykernel.sh
+              sed -i "s/platform\/omap\/omap_hsmmc\.0\/by-name\/boot/bootdevice\/by-name\/boot/g" anykernel.sh
+              sed -i "s/backup_file/#backup_file/g" anykernel.sh
+              sed -i "s/replace_string/#replace_string/g" anykernel.sh
+              sed -i "s/insert_line/#insert_line/g" anykernel.sh
+              sed -i "s/append_file/#append_file/g" anykernel.sh
+              sed -i "s/patch_fstab/#patch_fstab/g" anykernel.sh
+              sed -i "s/dump_boot/split_boot/g" anykernel.sh
+              sed -i "s/write_boot/flash_boot/g" anykernel.sh            
+              zip kernel.zip *
+              cp /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/out/Anykernel3/kernel.zip /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel/kernel.zip
+              cd /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/workspace/kernel
+              ls
+
+       - name: Save
+         uses: actions/upload-artifact@v3
+         with:
+            name: $Device.zip
+            path: /home/runner/work/android_kernel_samsung_sm8150/android_kernel_samsung_sm8150/work/kernel/kernel.zip
+            retention-days: 5
