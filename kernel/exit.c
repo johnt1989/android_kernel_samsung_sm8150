@@ -68,10 +68,6 @@
 #include <asm/pgtable.h>
 #include <asm/mmu_context.h>
 
-#ifdef CONFIG_SECURITY_DEFEX
-#include <linux/defex.h>
-#endif
-
 #ifdef CONFIG_SEC_DEBUG
 #include <linux/sec_debug.h>
 #endif
@@ -789,10 +785,6 @@ void __noreturn do_exit(long code)
 	struct pid_namespace *pid_ns;
 	struct task_struct *reaper;
 	int group_dead;
-
-#ifdef CONFIG_SECURITY_DEFEX
-	task_defex_zero_creds(current);
-#endif
 
 	/*
 	 * We can get here from a kernel oops, sometimes with preemption off.
