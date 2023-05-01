@@ -58,8 +58,10 @@ anykernel3()
   fi
   if [ -e out/arch/arm64/boot/Image.gz-dtb ]; then
     cp out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/zImage
+  fi
   if [ -e $(pwd)out/dtb.img ]; then
     cp $(pwd)/out/dtb.img $PARENT_DIR/AnyKernel3/dtb.img
+  fi
   if [ -e $(pwd)out/dtbo.img ]; then
     cp $(pwd)/out/dtbo.img $PARENT_DIR/AnyKernel3/dtbo.img
   fi
