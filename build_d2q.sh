@@ -14,25 +14,29 @@ KERNEL_MAKE_ENV="LOCALVERSION=-Doc714"
 export v=$(pwd)/arch/arm64/configs/doc_d2q_defconfig
 export VARIANT=d2q
 
-toolchain(){
+toolchain()
+{
   if [ ! -d $PARENT_DIR/aarch64-linux-android-4.9 ]; then
     git clone --branch android-9.0.0_r59 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9 $PARENT_DIR/aarch64-linux-android-4.9
   fi
 }
 
-llvm(){
+llvm()
+{
   if [ ! -d $PARENT_DIR/llvm-arm-toolchain-ship-10.0 ]; then
     git clone https://github.com/proprietary-stuff/llvm-arm-toolchain-ship-10.0 $PARENT_DIR/llvm-arm-toolchain-ship-10.0
   fi
 }
 
-clean(){
+clean()
+{
   make $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN clean 
   make $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN mrproper
   [ -d "out" ] && rm -rf out
  }
 
-build(){
+build()
+{
   [ ! -d "out" ] && mkdir out
   make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN doc_d2q_defconfig
   make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN
@@ -47,7 +51,8 @@ build(){
   fi
 }
 
-anykernel3(){
+anykernel3()
+{
   if [ ! -d $PARENT_DIR/AnyKernel3 ]; then
     git clone https://github.com/osm0sis/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
