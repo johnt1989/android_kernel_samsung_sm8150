@@ -34,7 +34,7 @@ clean(){
 
 build(){
   [ ! -d "out" ] && mkdir out
-  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN doc714_defconfig
+  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN doc_d2q_defconfig
   make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN
 
   [ -e out/arch/arm64/boot/Image.gz ] && cp out/arch/arm64/boot/Image.gz $(pwd)/out/Image.gz
@@ -53,6 +53,10 @@ anykernel3(){
   fi
   if [ -e out/arch/arm64/boot/Image.gz-dtb ]; then
     cp out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/zImage
+  if [ -e $(pwd)out/dtb.img ]; then
+    cp $(pwd)/out/dtb.img $PARENT_DIR/AnyKernel3/dtb.img
+  if [ -e $(pwd)out/dtbo.img ]; then
+    cp $(pwd)/out/dtbo.img $PARENT_DIR/AnyKernel3/dtbo.img
   fi
   cd $PARENT_DIR/AnyKernel3
   git reset --hard
