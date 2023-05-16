@@ -15,7 +15,7 @@ dts-dirs += renovation
 else ifeq ($(filter y,$(CONFIG_SEC_ZODIAC_PROJECT)),y)
 dts-dirs += zodiac
 else ifeq ($(filter y,$(CONFIG_SEC_A82XQ_PROJECT)),y)
-dts-dirs += a82xq
+dts-dirs += a82
 endif
 
 ifeq ($(CONFIG_ARM64),y)

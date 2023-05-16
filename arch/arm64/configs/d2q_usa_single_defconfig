@@ -6073,7 +6073,6 @@ CONFIG_GATOR=m
 #
 # samsung Performace manager
 #
-CONFIG_KPERFMON=y
 CONFIG_SPU_VERIFY=y
 
 #
